@@ -1,0 +1,5 @@
+<Solution>
+  <Project Path="InstalmentNote.AppHost/InstalmentNote.AppHost.csproj" />
+  <Project Path="InstalmentNote.ServiceDefaults/InstalmentNote.ServiceDefaults.csproj" />
+  <Project Path="InstalmentNote/InstalmentNote.csproj" />
+</Solution>

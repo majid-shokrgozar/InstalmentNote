@@ -1,0 +1,54 @@
+# Build outputs
+[Bb]in/
+[Oo]bj/
+[Dd]ebug/
+[Rr]elease/
+out/
+artifacts/
+
+# User-specific files
+*.user
+*.rsuser
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Visual Studio / VS Code / Rider
+.vs/
+.vscode/
+.idea/
+*.DotSettings.user
+
+# NuGet
+packages/
+*.nupkg
+*.snupkg
+project.lock.json
+project.fragment.lock.json
+
+# Logs
+*.log
+logs/
+
+# Test results
+[Tt]est[Rr]esult*/
+[Bb]enchmarkDotNet.Artifacts/
+
+# ASP.NET / local config
+appsettings.Local.json
+appsettings.*.local.json
+secrets.json
+
+# EF Core / local databases
+*.db
+*.db-shm
+*.db-wal
+*.mdf
+*.ldf
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Aspire / local generated data
+.aspire/
