@@ -5,72 +5,78 @@ namespace InstalmentNote.Data;
 
 public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : IdentityDbContext<ApplicationUser>(options)
 {
-    public DbSet<Instalment> Instalments => Set<Instalment>();
+    public DbSet<LoanFacility> LoanFacilities => Set<LoanFacility>();
 
-    public DbSet<InstalmentItem> InstalmentItems => Set<InstalmentItem>();
+    public DbSet<Installment> Installments => Set<Installment>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
 
-        builder.Entity<Instalment>(entity =>
+        builder.Entity<LoanFacility>(entity =>
         {
-            entity.ToTable("Instalments");
+            entity.ToTable("LoanFacilities");
 
-            entity.Property(instalment => instalment.Title)
+            entity.Property(loan => loan.Title)
                 .HasMaxLength(200);
 
-            entity.Property(instalment => instalment.BankName)
+            entity.Property(loan => loan.ProviderName)
                 .HasMaxLength(150);
 
-            entity.Property(instalment => instalment.ContractNumber)
+            entity.Property(loan => loan.FacilityType)
                 .HasMaxLength(100);
 
-            entity.Property(instalment => instalment.AccountNumber)
+            entity.Property(loan => loan.ContractNumber)
                 .HasMaxLength(100);
 
-            entity.Property(instalment => instalment.TotalAmount)
+            entity.Property(loan => loan.PrincipalAmount)
                 .HasColumnType("decimal(18,2)");
 
-            entity.Property(instalment => instalment.InstalmentAmount)
+            entity.Property(loan => loan.ReceivedAmount)
                 .HasColumnType("decimal(18,2)");
 
-            entity.Property(instalment => instalment.Description)
+            entity.Property(loan => loan.InterestRate)
+                .HasColumnType("decimal(5,2)");
+
+            entity.Property(loan => loan.InstallmentAmount)
+                .HasColumnType("decimal(18,2)");
+
+            entity.Property(loan => loan.Description)
                 .HasMaxLength(1000);
 
-            entity.Property(instalment => instalment.CreatedAtUtc)
-                .HasDefaultValueSql("GETUTCDATE()");
+            entity.Property(loan => loan.CreatedAtUtc)
+                .HasDefaultValueSql("NOW()");
 
-            entity.HasOne(instalment => instalment.User)
-                .WithMany(user => user.Instalments)
-                .HasForeignKey(instalment => instalment.UserId)
+            entity.HasOne(loan => loan.User)
+                .WithMany(user => user.LoanFacilities)
+                .HasForeignKey(loan => loan.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            entity.HasIndex(instalment => new { instalment.UserId, instalment.BankName, instalment.StartDate });
+            entity.HasIndex(loan => new { loan.UserId, loan.ProviderName, loan.StartDate });
         });
 
-        builder.Entity<InstalmentItem>(entity =>
+        builder.Entity<Installment>(entity =>
         {
-            entity.ToTable("InstalmentItems");
+            entity.ToTable("Installments");
 
-            entity.Property(item => item.Amount)
+            entity.Property(installment => installment.Amount)
                 .HasColumnType("decimal(18,2)");
 
-            entity.Property(item => item.Note)
+            entity.Property(installment => installment.Note)
                 .HasMaxLength(500);
 
-            entity.Property(item => item.CreatedAtUtc)
-                .HasDefaultValueSql("GETUTCDATE()");
+            entity.Property(installment => installment.CreatedAtUtc)
+                .HasDefaultValueSql("NOW()");
 
-            entity.HasOne(item => item.Instalment)
-                .WithMany(instalment => instalment.Items)
-                .HasForeignKey(item => item.InstalmentId)
+            entity.HasOne(installment => installment.LoanFacility)
+                .WithMany(loanFacility => loanFacility.Installments)
+                .HasForeignKey(installment => installment.LoanFacilityId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            entity.HasIndex(item => new { item.InstalmentId, item.SequenceNumber })
+            entity.HasIndex(installment => new { installment.LoanFacilityId, installment.SequenceNumber })
                 .IsUnique();
 
-            entity.HasIndex(item => new { item.DueDate, item.PaymentStatus, item.DueStatus });
+            entity.HasIndex(installment => new { installment.DueDate, installment.PaymentStatus, installment.DueStatus });
         });
     }
 }

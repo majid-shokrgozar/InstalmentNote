@@ -1,13 +1,15 @@
-using System;
+﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
-namespace InstalmentNote.Migrations
+namespace InstalmentNote.Data.Migrations
 {
+    /// <inheritdoc />
     public partial class InitialPostgres : Migration
     {
+        /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
@@ -175,29 +177,31 @@ namespace InstalmentNote.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Instalments",
+                name: "LoanFacilities",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     Title = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
-                    BankName = table.Column<string>(type: "character varying(150)", maxLength: 150, nullable: false),
+                    ProviderName = table.Column<string>(type: "character varying(150)", maxLength: 150, nullable: false),
+                    FacilityType = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
                     ContractNumber = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
-                    AccountNumber = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
+                    PrincipalAmount = table.Column<decimal>(type: "numeric(18,2)", nullable: false),
+                    ReceivedAmount = table.Column<decimal>(type: "numeric(18,2)", nullable: true),
+                    InterestRate = table.Column<decimal>(type: "numeric(5,2)", nullable: true),
                     StartDate = table.Column<DateOnly>(type: "date", nullable: false),
-                    FirstDueDate = table.Column<DateOnly>(type: "date", nullable: false),
-                    InstalmentCount = table.Column<int>(type: "integer", nullable: false),
-                    TotalAmount = table.Column<decimal>(type: "numeric(18,2)", nullable: false),
-                    InstalmentAmount = table.Column<decimal>(type: "numeric(18,2)", nullable: false),
+                    EndDate = table.Column<DateOnly>(type: "date", nullable: true),
+                    InstallmentCount = table.Column<int>(type: "integer", nullable: false),
+                    InstallmentAmount = table.Column<decimal>(type: "numeric(18,2)", nullable: true),
                     Description = table.Column<string>(type: "character varying(1000)", maxLength: 1000, nullable: true),
                     CreatedAtUtc = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "NOW()"),
                     UserId = table.Column<string>(type: "text", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Instalments", x => x.Id);
+                    table.PrimaryKey("PK_LoanFacilities", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Instalments_AspNetUsers_UserId",
+                        name: "FK_LoanFacilities_AspNetUsers_UserId",
                         column: x => x.UserId,
                         principalTable: "AspNetUsers",
                         principalColumn: "Id",
@@ -205,12 +209,12 @@ namespace InstalmentNote.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "InstalmentItems",
+                name: "Installments",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    InstalmentId = table.Column<int>(type: "integer", nullable: false),
+                    LoanFacilityId = table.Column<int>(type: "integer", nullable: false),
                     SequenceNumber = table.Column<int>(type: "integer", nullable: false),
                     Amount = table.Column<decimal>(type: "numeric(18,2)", nullable: false),
                     DueDate = table.Column<DateOnly>(type: "date", nullable: false),
@@ -222,40 +226,106 @@ namespace InstalmentNote.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_InstalmentItems", x => x.Id);
+                    table.PrimaryKey("PK_Installments", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_InstalmentItems_Instalments_InstalmentId",
-                        column: x => x.InstalmentId,
-                        principalTable: "Instalments",
+                        name: "FK_Installments_LoanFacilities_LoanFacilityId",
+                        column: x => x.LoanFacilityId,
+                        principalTable: "LoanFacilities",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
 
-            migrationBuilder.CreateIndex(name: "IX_AspNetRoleClaims_RoleId", table: "AspNetRoleClaims", column: "RoleId");
-            migrationBuilder.CreateIndex(name: "RoleNameIndex", table: "AspNetRoles", column: "NormalizedName", unique: true);
-            migrationBuilder.CreateIndex(name: "IX_AspNetUserClaims_UserId", table: "AspNetUserClaims", column: "UserId");
-            migrationBuilder.CreateIndex(name: "EmailIndex", table: "AspNetUsers", column: "NormalizedEmail");
-            migrationBuilder.CreateIndex(name: "IX_AspNetUserLogins_UserId", table: "AspNetUserLogins", column: "UserId");
-            migrationBuilder.CreateIndex(name: "IX_AspNetUserPasskeys_UserId", table: "AspNetUserPasskeys", column: "UserId");
-            migrationBuilder.CreateIndex(name: "IX_AspNetUserRoles_RoleId", table: "AspNetUserRoles", column: "RoleId");
-            migrationBuilder.CreateIndex(name: "UserNameIndex", table: "AspNetUsers", column: "NormalizedUserName", unique: true);
-            migrationBuilder.CreateIndex(name: "IX_InstalmentItems_DueDate_PaymentStatus_DueStatus", table: "InstalmentItems", columns: new[] { "DueDate", "PaymentStatus", "DueStatus" });
-            migrationBuilder.CreateIndex(name: "IX_InstalmentItems_InstalmentId_SequenceNumber", table: "InstalmentItems", columns: new[] { "InstalmentId", "SequenceNumber" }, unique: true);
-            migrationBuilder.CreateIndex(name: "IX_Instalments_UserId_BankName_StartDate", table: "Instalments", columns: new[] { "UserId", "BankName", "StartDate" });
+            migrationBuilder.CreateIndex(
+                name: "IX_AspNetRoleClaims_RoleId",
+                table: "AspNetRoleClaims",
+                column: "RoleId");
+
+            migrationBuilder.CreateIndex(
+                name: "RoleNameIndex",
+                table: "AspNetRoles",
+                column: "NormalizedName",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_AspNetUserClaims_UserId",
+                table: "AspNetUserClaims",
+                column: "UserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_AspNetUserLogins_UserId",
+                table: "AspNetUserLogins",
+                column: "UserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_AspNetUserPasskeys_UserId",
+                table: "AspNetUserPasskeys",
+                column: "UserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_AspNetUserRoles_RoleId",
+                table: "AspNetUserRoles",
+                column: "RoleId");
+
+            migrationBuilder.CreateIndex(
+                name: "EmailIndex",
+                table: "AspNetUsers",
+                column: "NormalizedEmail");
+
+            migrationBuilder.CreateIndex(
+                name: "UserNameIndex",
+                table: "AspNetUsers",
+                column: "NormalizedUserName",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Installments_DueDate_PaymentStatus_DueStatus",
+                table: "Installments",
+                columns: new[] { "DueDate", "PaymentStatus", "DueStatus" });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Installments_LoanFacilityId_SequenceNumber",
+                table: "Installments",
+                columns: new[] { "LoanFacilityId", "SequenceNumber" },
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_LoanFacilities_UserId_ProviderName_StartDate",
+                table: "LoanFacilities",
+                columns: new[] { "UserId", "ProviderName", "StartDate" });
         }
 
+        /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropTable(name: "AspNetRoleClaims");
-            migrationBuilder.DropTable(name: "AspNetUserClaims");
-            migrationBuilder.DropTable(name: "AspNetUserLogins");
-            migrationBuilder.DropTable(name: "AspNetUserPasskeys");
-            migrationBuilder.DropTable(name: "AspNetUserRoles");
-            migrationBuilder.DropTable(name: "AspNetUserTokens");
-            migrationBuilder.DropTable(name: "InstalmentItems");
-            migrationBuilder.DropTable(name: "AspNetRoles");
-            migrationBuilder.DropTable(name: "Instalments");
-            migrationBuilder.DropTable(name: "AspNetUsers");
+            migrationBuilder.DropTable(
+                name: "AspNetRoleClaims");
+
+            migrationBuilder.DropTable(
+                name: "AspNetUserClaims");
+
+            migrationBuilder.DropTable(
+                name: "AspNetUserLogins");
+
+            migrationBuilder.DropTable(
+                name: "AspNetUserPasskeys");
+
+            migrationBuilder.DropTable(
+                name: "AspNetUserRoles");
+
+            migrationBuilder.DropTable(
+                name: "AspNetUserTokens");
+
+            migrationBuilder.DropTable(
+                name: "Installments");
+
+            migrationBuilder.DropTable(
+                name: "AspNetRoles");
+
+            migrationBuilder.DropTable(
+                name: "LoanFacilities");
+
+            migrationBuilder.DropTable(
+                name: "AspNetUsers");
         }
     }
 }

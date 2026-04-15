@@ -2,13 +2,13 @@ using System.ComponentModel.DataAnnotations;
 
 namespace InstalmentNote.Data;
 
-public class InstalmentItem
+public class Installment
 {
     public int Id { get; set; }
 
-    public int InstalmentId { get; set; }
+    public int LoanFacilityId { get; set; }
 
-    public Instalment Instalment { get; set; } = null!;
+    public LoanFacility LoanFacility { get; set; } = null!;
 
     public int SequenceNumber { get; set; }
 
